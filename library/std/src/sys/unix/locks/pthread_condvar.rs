@@ -2,9 +2,9 @@ use crate::cell::UnsafeCell;
 use crate::ptr;
 use crate::sync::atomic::{AtomicPtr, Ordering::Relaxed};
 use crate::sys::locks::{pthread_mutex, Mutex};
-#[cfg(not(target_os = "nto"))]
+#[cfg(not(all(target_os = "nto", target_pointer_width = "64")))]
 use crate::sys::time::TIMESPEC_MAX;
-#[cfg(target_os = "nto")]
+#[cfg(all(target_os = "nto", target_pointer_width = "64"))]
 use crate::sys::time::TIMESPEC_MAX_CAPPED;
 use crate::sys_common::lazy_box::{LazyBox, LazyInit};
 use crate::time::Duration;
@@ -135,13 +135,13 @@ impl Condvar {
         let mutex = pthread_mutex::raw(mutex);
         self.verify(mutex);
 
-        #[cfg(not(target_os = "nto"))]
+        #[cfg(not(all(target_os = "nto", target_pointer_width = "64")))]
         let timeout = Timespec::now(libc::CLOCK_MONOTONIC)
             .checked_add_duration(&dur)
             .and_then(|t| t.to_timespec())
             .unwrap_or(TIMESPEC_MAX);
 
-        #[cfg(target_os = "nto")]
+        #[cfg(all(target_os = "nto", target_pointer_width = "64"))]
         let timeout = Timespec::now(libc::CLOCK_MONOTONIC)
             .checked_add_duration(&dur)
             .and_then(|t| t.to_timespec_capped())

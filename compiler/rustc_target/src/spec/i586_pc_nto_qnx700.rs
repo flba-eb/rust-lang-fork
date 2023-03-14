@@ -1,5 +1,5 @@
 use super::nto_qnx_base;
-use crate::spec::{Cc, LinkerFlavor, Lld, StackProbeType, Target, TargetOptions};
+use crate::spec::{Cc, LinkerFlavor, Lld, PanicStrategy, StackProbeType, Target, TargetOptions};
 
 pub fn target() -> Target {
     Target {
@@ -18,6 +18,7 @@ pub fn target() -> Target {
             ),
             env: "nto70".into(),
             stack_probes: StackProbeType::X86,
+            panic_strategy: PanicStrategy::Abort,
             ..nto_qnx_base::opts()
         },
     }

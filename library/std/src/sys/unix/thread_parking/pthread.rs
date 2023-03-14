@@ -6,9 +6,9 @@ use crate::pin::Pin;
 use crate::ptr::addr_of_mut;
 use crate::sync::atomic::AtomicUsize;
 use crate::sync::atomic::Ordering::SeqCst;
-#[cfg(not(target_os = "nto"))]
+#[cfg(not(all(target_os = "nto", target_pointer_width = "64")))]
 use crate::sys::time::TIMESPEC_MAX;
-#[cfg(target_os = "nto")]
+#[cfg(all(target_os = "nto", target_pointer_width = "64"))]
 use crate::sys::time::TIMESPEC_MAX_CAPPED;
 use crate::time::Duration;
 
@@ -83,10 +83,10 @@ unsafe fn wait_timeout(
         (Timespec::now(libc::CLOCK_MONOTONIC), dur)
     };
 
-    #[cfg(not(target_os = "nto"))]
+    #[cfg(not(all(target_os = "nto", target_pointer_width = "64")))]
     let timeout =
         now.checked_add_duration(&dur).and_then(|t| t.to_timespec()).unwrap_or(TIMESPEC_MAX);
-    #[cfg(target_os = "nto")]
+    #[cfg(all(target_os = "nto", target_pointer_width = "64"))]
     let timeout = now
         .checked_add_duration(&dur)
         .and_then(|t| t.to_timespec_capped())

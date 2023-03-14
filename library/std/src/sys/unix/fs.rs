@@ -543,7 +543,7 @@ impl FileAttr {
     }
 }
 
-#[cfg(target_os = "nto")]
+#[cfg(all(target_os = "nto", target_pointer_width = "64"))]
 impl FileAttr {
     pub fn modified(&self) -> io::Result<SystemTime> {
         Ok(SystemTime::new(self.stat.st_mtim.tv_sec, self.stat.st_mtim.tv_nsec))
@@ -555,6 +555,21 @@ impl FileAttr {
 
     pub fn created(&self) -> io::Result<SystemTime> {
         Ok(SystemTime::new(self.stat.st_ctim.tv_sec, self.stat.st_ctim.tv_nsec))
+    }
+}
+
+#[cfg(all(target_os = "nto", target_pointer_width = "32"))]
+impl FileAttr {
+    pub fn modified(&self) -> io::Result<SystemTime> {
+        Ok(SystemTime::new(self.stat.st_mtime as i64, 0))
+    }
+
+    pub fn accessed(&self) -> io::Result<SystemTime> {
+        Ok(SystemTime::new(self.stat.st_atime as i64, 0))
+    }
+
+    pub fn created(&self) -> io::Result<SystemTime> {
+        Ok(SystemTime::new(self.stat.st_ctime as i64, 0))
     }
 }
 
@@ -1543,12 +1558,13 @@ pub fn link(original: &Path, link: &Path) -> io::Result<()> {
     run_path_with_cstr(original, |original| {
         run_path_with_cstr(link, |link| {
             cfg_if::cfg_if! {
-                if #[cfg(any(target_os = "vxworks", target_os = "redox", target_os = "android", target_os = "espidf", target_os = "horizon"))] {
-                    // VxWorks, Redox and ESP-IDF lack `linkat`, so use `link` instead. POSIX leaves
-                    // it implementation-defined whether `link` follows symlinks, so rely on the
-                    // `symlink_hard_link` test in library/std/src/fs/tests.rs to check the behavior.
-                    // Android has `linkat` on newer versions, but we happen to know `link`
-                    // always has the correct behavior, so it's here as well.
+                if #[cfg(any(target_os = "vxworks", target_os = "redox", target_os = "android", target_os = "espidf", target_os = "horizon", all(target_os = "nto", target_env = "nto70")))] {
+                    // VxWorks, Redox, ESP-IDF, and QNX Neutrino <=7.0 lack `linkat`, so use `link`
+                    // instead. POSIX leaves it implementation-defined whether `link` follows
+                    // symlinks, so rely on the `symlink_hard_link` test in
+                    // library/std/src/fs/tests.rs to check the behavior. Android has `linkat` on
+                    // newer versions, but we happen to know `link` always has the correct behavior,
+                    // so it's here as well.
                     cvt(unsafe { libc::link(original.as_ptr(), link.as_ptr()) })?;
                 } else if #[cfg(any(target_os = "macos", target_os = "solaris"))] {
                     // MacOS (<=10.9) and Solaris 10 lack support for linkat while newer

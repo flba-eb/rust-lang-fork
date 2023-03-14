@@ -11,11 +11,15 @@ pub const TIMESPEC_MAX: libc::timespec =
 
 // This additional constant is only used when calling
 // `libc::pthread_cond_timedwait`.
-#[cfg(target_os = "nto")]
+#[cfg(all(target_os = "nto", target_pointer_width = "64"))]
 pub(super) const TIMESPEC_MAX_CAPPED: libc::timespec = libc::timespec {
     tv_sec: (u64::MAX / NSEC_PER_SEC) as i64,
     tv_nsec: (u64::MAX % NSEC_PER_SEC) as i64,
 };
+
+// #[cfg(all(target_os = "nto", target_pointer_width = "32"))]
+// pub(super) const TIMESPEC_MAX_CAPPED: libc::timespec =
+//     libc::timespec { tv_sec: (u32::MAX / NSEC_PER_SEC), tv_nsec: (u32::MAX % NSEC_PER_SEC) };
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
@@ -147,7 +151,7 @@ impl Timespec {
 
     // On QNX Neutrino, the maximum timespec for e.g. pthread_cond_timedwait
     // is 2^64 nanoseconds
-    #[cfg(target_os = "nto")]
+    #[cfg(all(target_os = "nto", target_pointer_width = "64"))]
     pub(super) fn to_timespec_capped(&self) -> Option<libc::timespec> {
         // Check if timeout in nanoseconds would fit into an u64
         if (self.tv_nsec.0 as u64)

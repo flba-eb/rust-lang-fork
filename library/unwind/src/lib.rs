@@ -144,6 +144,6 @@ extern "C" {}
 #[link(name = "gcc_s")]
 extern "C" {}
 
-#[cfg(target_os = "nto")]
+#[cfg(all(target_os = "nto", not(target_env = "nto70")))]
 #[link(name = "gcc_s")]
 extern "C" {}
