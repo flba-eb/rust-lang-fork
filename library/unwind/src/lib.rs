@@ -13,6 +13,7 @@ cfg_if::cfg_if! {
         target_os = "l4re",
         target_os = "none",
         target_os = "espidf",
+        all(target_os = "nto", target_env = "nto70"),
     ))] {
         // These "unix" family members do not have unwinder.
     } else if #[cfg(any(

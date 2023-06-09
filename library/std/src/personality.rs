@@ -29,7 +29,13 @@ cfg_if::cfg_if! {
         all(target_family = "windows", target_env = "gnu"),
         target_os = "psp",
         target_os = "solid_asp3",
-        all(target_family = "unix", not(target_os = "espidf")),
+        all(
+            target_family = "unix",
+            not(any(
+                target_os = "espidf",
+                all(target_os = "nto", target_env = "nto70")
+            ))
+        ),
         all(target_vendor = "fortanix", target_env = "sgx"),
     ))] {
         mod gcc;
@@ -40,6 +46,7 @@ cfg_if::cfg_if! {
         // - os=uefi
         // - os=espidf
         // - os=hermit
+        // - os=nto,env=nto70
         // - nvptx64-nvidia-cuda
         // - arch=avr
     }

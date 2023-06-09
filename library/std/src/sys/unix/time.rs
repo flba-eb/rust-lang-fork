@@ -17,10 +17,6 @@ pub(super) const TIMESPEC_MAX_CAPPED: libc::timespec = libc::timespec {
     tv_nsec: (u64::MAX % NSEC_PER_SEC) as i64,
 };
 
-// #[cfg(all(target_os = "nto", target_pointer_width = "32"))]
-// pub(super) const TIMESPEC_MAX_CAPPED: libc::timespec =
-//     libc::timespec { tv_sec: (u32::MAX / NSEC_PER_SEC), tv_nsec: (u32::MAX % NSEC_PER_SEC) };
-
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
 #[rustc_layout_scalar_valid_range_start(0)]
