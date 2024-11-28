@@ -38,7 +38,7 @@ use libc::{c_int, pid_t};
 use libc::{gid_t, uid_t};
 
 cfg_if::cfg_if! {
-    if #[cfg(all(target_os = "nto", target_env = "nto71"))] {
+    if #[cfg(any(target_env = "nto71", target_env = "nto71_iosock"))] {
         use crate::thread;
         use libc::{c_char, posix_spawn_file_actions_t, posix_spawnattr_t};
         use crate::time::Duration;
@@ -209,7 +209,7 @@ impl Command {
     #[cfg(not(any(
         target_os = "watchos",
         target_os = "tvos",
-        all(target_os = "nto", target_env = "nto71"),
+        any(target_env = "nto71", target_env = "nto71_iosock"),
     )))]
     unsafe fn do_fork(&mut self) -> Result<pid_t, io::Error> {
         cvt(libc::fork())
@@ -219,7 +219,7 @@ impl Command {
     // or closed a file descriptor while the fork() was occurring".
     // Documentation says "... or try calling fork() again". This is what we do here.
     // See also https://www.qnx.com/developers/docs/7.1/#com.qnx.doc.neutrino.lib_ref/topic/f/fork.html
-    #[cfg(all(target_os = "nto", target_env = "nto71"))]
+    #[cfg(any(target_env = "nto71", target_env = "nto71_iosock"))]
     unsafe fn do_fork(&mut self) -> Result<pid_t, io::Error> {
         use crate::sys::os::errno;
 
@@ -487,7 +487,7 @@ impl Command {
         // or closed a file descriptor while the posix_spawn() was occurring".
         // Documentation says "... or try calling posix_spawn() again". This is what we do here.
         // See also http://www.qnx.com/developers/docs/7.1/#com.qnx.doc.neutrino.lib_ref/topic/p/posix_spawn.html
-        #[cfg(all(target_os = "nto", target_env = "nto71"))]
+        #[cfg(any(target_env = "nto71", target_env = "nto71_iosock"))]
         unsafe fn retrying_libc_posix_spawnp(
             pid: *mut pid_t,
             file: *const c_char,
